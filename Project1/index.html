@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8f0fe;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .calc-wrapper {
+    background: #2979f2;
+    border-radius: 28px;
+    padding: 28px 24px 28px 24px;
+    box-shadow:
+      0 8px 0 #1a5dd4,
+      0 16px 40px rgba(41, 121, 242, 0.45),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+    width: 320px;
+  }
+
+  /* Display */
+  .display {
+    background: #e8f4ff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+
+  .display .expression {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: #7a9bbf;
+    min-height: 18px;
+    letter-spacing: 1px;
+    word-break: break-all;
+    text-align: right;
+  }
+
+  .display .result {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 36px;
+    color: #1a2a3a;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    word-break: break-all;
+    text-align: right;
+    transition: font-size 0.15s;
+  }
+
+  .display .result.small { font-size: 24px; }
+
+  /* Button grid */
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  button {
+    background: #1a5ed4;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    height: 62px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 5px 0 #1044a8, 0 6px 12px rgba(0,0,0,0.15);
+    transition: transform 0.08s, box-shadow 0.08s, background 0.1s;
+    position: relative;
+    user-select: none;
+    letter-spacing: 0.5px;
+  }
+
+  button:hover {
+    background: #2166e0;
+  }
+
+  button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #1044a8, 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  /* Operator buttons */
+  button.op {
+    background: #1755c8;
+    box-shadow: 0 5px 0 #0e3d98, 0 6px 12px rgba(0,0,0,0.15);
+    font-size: 26px;
+  }
+  button.op:hover { background: #1e64da; }
+  button.op:active { transform: translateY(4px); box-shadow: 0 1px 0 #0e3d98; }
+
+  /* Equals */
+  button.equals {
+    background: #fff;
+    color: #1755c8;
+    box-shadow: 0 5px 0 #b0c4e8, 0 6px 12px rgba(0,0,0,0.12);
+    font-size: 26px;
+  }
+  button.equals:hover { background: #eef4ff; }
+  button.equals:active { transform: translateY(4px); box-shadow: 0 1px 0 #b0c4e8; }
+
+  /* Clear / special */
+  button.clear {
+    background: #e05a5a;
+    box-shadow: 0 5px 0 #a03030, 0 6px 12px rgba(0,0,0,0.15);
+    font-size: 18px;
+  }
+  button.clear:hover { background: #e87070; }
+  button.clear:active { transform: translateY(4px); box-shadow: 0 1px 0 #a03030; }
+
+  button.zero {
+    grid-column: span 2;
+  }
+
+  /* Ripple effect */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: ripple-anim 0.4s linear;
+    pointer-events: none;
+  }
+  @keyframes ripple-anim {
+    to { transform: scale(4); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="calc-wrapper">
+  <div class="display">
+    <div class="expression" id="expression"></div>
+    <div class="result" id="result">0</div>
+  </div>
+  <div class="buttons">
+    <button class="clear" onclick="clearAll(this)">AC</button>
+    <button class="op" onclick="toggleSign(this)">+/-</button>
+    <button class="op" onclick="percent(this)">%</button>
+    <button class="op" onclick="inputOp('/', this)">÷</button>
+
+    <button onclick="inputNum('7', this)">7</button>
+    <button onclick="inputNum('8', this)">8</button>
+    <button onclick="inputNum('9', this)">9</button>
+    <button class="op" onclick="inputOp('*', this)">×</button>
+
+    <button onclick="inputNum('4', this)">4</button>
+    <button onclick="inputNum('5', this)">5</button>
+    <button onclick="inputNum('6', this)">6</button>
+    <button class="op" onclick="inputOp('-', this)">−</button>
+
+    <button onclick="inputNum('1', this)">1</button>
+    <button onclick="inputNum('2', this)">2</button>
+    <button onclick="inputNum('3', this)">3</button>
+    <button class="op" onclick="inputOp('+', this)">+</button>
+
+    <button class="zero" onclick="inputNum('0', this)">0</button>
+    <button onclick="inputDot(this)">.</button>
+    <button class="equals" onclick="calculate(this)">=</button>
+  </div>
+</div>
+
+<script>
+  let current = '0';
+  let expression = '';
+  let justCalc = false;
+
+  const resultEl = document.getElementById('result');
+  const exprEl = document.getElementById('expression');
+
+  function updateDisplay() {
+    resultEl.textContent = current;
+    resultEl.classList.toggle('small', current.length > 9);
+    exprEl.textContent = expression;
+  }
+
+  function inputNum(n, btn) {
+    ripple(btn);
+    if (justCalc) { current = n; expression = ''; justCalc = false; }
+    else current = (current === '0') ? n : current + n;
+    updateDisplay();
+  }
+
+  function inputDot(btn) {
+    ripple(btn);
+    if (!current.includes('.')) current += '.';
+    updateDisplay();
+  }
+
+  function inputOp(op, btn) {
+    ripple(btn);
+    justCalc = false;
+    const sym = {'+':'+', '-':'−', '*':'×', '/':'÷'}[op];
+    // If expression already has pending op, calculate first
+    if (expression && !expression.endsWith(' ')) {
+      expression += ' ' + current + ' ' + sym + ' ';
+      try {
+        const val = eval(expression.replace(/−/g,'−').replace(/×/g,'*').replace(/÷/g,'/').replace(/[^0-9+\-*/.() ]/g,''));
+        current = String(parseFloat(val.toFixed(10)));
+      } catch(e) {}
+    } else {
+      expression = current + ' ' + sym + ' ';
+    }
+    current = '0';
+    updateDisplay();
+  }
+
+  function calculate(btn) {
+    ripple(btn);
+    if (!expression) return;
+    const full = expression + current;
+    exprEl.textContent = full + ' =';
+    try {
+      const safe = full.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-');
+      let result = eval(safe);
+      if (!isFinite(result)) { current = 'Error'; }
+      else current = String(parseFloat(result.toFixed(10)));
+    } catch(e) { current = 'Error'; }
+    expression = '';
+    justCalc = true;
+    resultEl.textContent = current;
+    resultEl.classList.toggle('small', current.length > 9);
+  }
+
+  function clearAll(btn) {
+    ripple(btn);
+    current = '0'; expression = ''; justCalc = false;
+    updateDisplay();
+  }
+
+  function toggleSign(btn) {
+    ripple(btn);
+    if (current !== '0' && current !== 'Error') {
+      current = current.startsWith('-') ? current.slice(1) : '-' + current;
+    }
+    updateDisplay();
+  }
+
+  function percent(btn) {
+    ripple(btn);
+    if (current !== 'Error') current = String(parseFloat(current) / 100);
+    updateDisplay();
+  }
+
+  function ripple(btn) {
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const size = Math.max(btn.offsetWidth, btn.offsetHeight);
+    r.style.width = r.style.height = size + 'px';
+    r.style.left = '50%'; r.style.top = '50%';
+    r.style.marginLeft = r.style.marginTop = (-size/2) + 'px';
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 400);
+  }
+</script>
+</body>
+</html>
